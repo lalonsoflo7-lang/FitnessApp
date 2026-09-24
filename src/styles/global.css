@@ -955,3 +955,11 @@ button.list-item:disabled {
   font-size: 1.3rem;
   font-weight: 750;
 }
+
+.pr-list {
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 201, 92, 0.4);
+  background: rgba(255, 201, 92, 0.06);
+}

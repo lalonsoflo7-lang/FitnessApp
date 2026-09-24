@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { compareSessions, compareSetWithPrevious } from '../../analytics/compare';
 import { volume } from '../../analytics/metrics';
-import { detectSetPRs } from '../../analytics/prs';
+import { detectSessionPRs, detectSetPRs } from '../../analytics/prs';
 import type { WorkoutSet } from '../../domain/types';
 import { suggestNextSet, type SetDraft } from '../../domain/workoutOps';
 import type { SetValues } from '../../data/workoutsRepo';
 import type { WorkoutExerciseData } from '../../hooks/useWorkoutExercises';
-import { formatDate, formatSet, formatSigned, formatVolume } from '../../lib/format';
+import { describePR, formatDate, formatSet, formatSigned, formatVolume } from '../../lib/format';
 import { readJSON, removeKey, writeJSON } from '../../lib/storage';
-import { TrashIcon } from '../../ui/icons';
+import { StarIcon, TrashIcon } from '../../ui/icons';
 import { DeltaBadge, PrBadge, SetTypeBadge } from './SetBadges';
 import { SetForm } from './SetForm';
 
@@ -169,6 +169,10 @@ export function ExercisePanel({
   const initial = stored && stored.count === todaySets.length ? stored.draft : suggestion;
   const comparison = compareSessions(todaySets, previous?.sets ?? null);
   const todayVolume = volume(todaySets);
+  const sessionPRs = detectSessionPRs(
+    todaySets,
+    data.priorSessions.map((session) => session.sets),
+  );
 
   return (
     <section className="stack" aria-labelledby={`ex-${snapshot.exerciseId}`}>
@@ -196,6 +200,18 @@ export function ExercisePanel({
             </span>
           )}
         </div>
+        {sessionPRs.length > 0 && (
+          <ul className="list pr-list" aria-label="Récords de hoy">
+            {sessionPRs.map((pr, i) => (
+              <li key={i} className="row small">
+                <span className="badge badge--pr">
+                  <StarIcon width={12} height={12} /> Nuevo récord
+                </span>
+                <span>{describePR(pr)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
         {todaySets.length === 0 ? (
           <p className="small muted">Aún no registras series de este ejercicio.</p>
         ) : (

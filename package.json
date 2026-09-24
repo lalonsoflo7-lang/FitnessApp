@@ -12,8 +12,11 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
-    "test:rules": "firebase emulators:exec --only firestore --project demo-fitnessapp \"vitest run --config vitest.rules.config.ts\""
+    "test:e2e": "firebase emulators:exec --only auth,firestore --project demo-fitnessapp \"playwright test\"",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-fitnessapp \"vitest run --config vitest.rules.config.ts\"",
+    "build:e2e": "vite build --mode e2e --outDir dist-e2e",
+    "emulators": "firebase emulators:start --only auth,firestore --project demo-fitnessapp",
+    "icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
     "firebase": "^12.19.0",

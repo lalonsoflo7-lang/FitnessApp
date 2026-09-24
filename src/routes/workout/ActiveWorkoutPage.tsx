@@ -42,7 +42,10 @@ export default function ActiveWorkoutPage() {
       </main>
     );
   }
-  if (workout.status === 'completed') return <Navigate to={`/historial/${workout.id}`} replace />;
+  // Reached right after finishing (the local snapshot can update before navigate() runs).
+  if (workout.status === 'completed') {
+    return <Navigate to={`/historial/${workout.id}?terminado=1`} replace />;
+  }
   return <ActiveWorkout workout={workout} />;
 }
 

@@ -6,6 +6,10 @@ function delta(a: number | null, b: number | null): number | null {
   return a === null || b === null ? null : roundTo(a - b, 2);
 }
 
+function totalReps(sets: readonly SetLike[]): number {
+  return metricSets(sets).reduce((n, s) => n + s.reps, 0);
+}
+
 /** Compares one exercise's session against its previous session. */
 export function compareSessions(
   current: readonly SetLike[],
@@ -19,6 +23,7 @@ export function compareSessions(
     volumeDelta: roundTo(volume(current) - volume(previous), 2),
     topWeightDelta: delta(topWeight(current), topWeight(previous)),
     e1rmDelta: delta(bestE1rm(current), bestE1rm(previous)),
+    repsDelta: totalReps(current) - totalReps(previous),
     currentMetricSets,
     previousMetricSets,
     sameStructure: currentMetricSets === previousMetricSets,

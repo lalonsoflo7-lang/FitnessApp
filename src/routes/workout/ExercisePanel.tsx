@@ -232,8 +232,9 @@ export function ExercisePanel({
 
       <div className="card">
         <SetForm
-          // Remount after each new set so the next suggestion is picked up.
-          key={`${snapshot.exerciseId}:${todaySets.length}`}
+          // Remount after each new set (next suggestion) and when the previous session arrives
+          // from the cache. Anything already typed survives via the stored draft.
+          key={`${snapshot.exerciseId}:${todaySets.length}:${previous?.workoutId ?? '-'}`}
           initial={initial}
           submitLabel={`Registrar serie ${todaySets.length + 1}`}
           onDraftChange={(draft) => writeJSON(key, { count: todaySets.length, draft })}

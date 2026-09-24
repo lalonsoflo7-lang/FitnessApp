@@ -127,6 +127,8 @@ export interface SessionComparison {
   volumeDelta: number;
   topWeightDelta: number | null;
   e1rmDelta: number | null;
+  /** Difference in total effective reps. Optional: absent in summaries stored before it existed. */
+  repsDelta?: number;
   currentMetricSets: number;
   previousMetricSets: number;
   /** False when the number of effective sets differs; volume deltas are then less meaningful. */

@@ -22,6 +22,7 @@ describe('compareSessions', () => {
     expect(c.topWeightDelta).toBe(2.5);
     expect(c.e1rmDelta).toBeCloseTo(82.5 * (1 + 8 / 30) - 80 * (1 + 8 / 30), 2);
     expect(c.sameStructure).toBe(true);
+    expect(c.repsDelta).toBe(25 - 24);
   });
 
   it('flags different structures so volume deltas are not over-interpreted', () => {

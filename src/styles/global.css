@@ -31,6 +31,8 @@
   --nav-h: 64px;
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-t: env(safe-area-inset-top, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
 
   --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-family: var(--font);
@@ -148,7 +150,8 @@ textarea {
   width: 100%;
   max-width: 640px;
   margin: 0 auto;
-  padding: calc(16px + var(--safe-t)) 16px calc(var(--nav-h) + 24px + var(--safe-b));
+  padding: calc(16px + var(--safe-t)) calc(16px + var(--safe-r))
+    calc(var(--nav-h) + 24px + var(--safe-b)) calc(16px + var(--safe-l));
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -217,7 +220,7 @@ textarea {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   height: calc(var(--nav-h) + var(--safe-b));
-  padding-bottom: var(--safe-b);
+  padding: 0 var(--safe-r) var(--safe-b) var(--safe-l);
   background: rgba(14, 17, 22, 0.94);
   backdrop-filter: blur(10px);
   border-top: 1px solid var(--border);
@@ -634,7 +637,7 @@ button.list-item:disabled {
   background: rgba(14, 17, 22, 0.96);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
-  padding: calc(8px + var(--safe-t)) 16px 8px;
+  padding: calc(8px + var(--safe-t)) calc(16px + var(--safe-r)) 8px calc(16px + var(--safe-l));
 }
 
 .workout-header__inner {
@@ -963,4 +966,18 @@ button.list-item:disabled {
   border-radius: var(--radius);
   border: 1px solid rgba(255, 201, 92, 0.4);
   background: rgba(255, 201, 92, 0.06);
+}
+
+/* The virtual keyboard is open (see useTypingFlag): hide the fixed nav so it can't cover fields. */
+body[data-typing] .bottom-nav {
+  display: none;
+}
+
+/* Tapping controls never triggers double-tap zoom on iOS. */
+a,
+button,
+input,
+label,
+select {
+  touch-action: manipulation;
 }

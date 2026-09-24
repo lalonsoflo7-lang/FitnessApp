@@ -1,4 +1,5 @@
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
+import { revealAboveKeyboard } from '../../hooks/useKeyboard';
 import { REPS_STEP, WEIGHT_STEP, DEFAULT_WEIGHT_UNIT } from '../../config/constants';
 import { SET_TYPES, SET_TYPE_SHORT_LABELS, type SetType } from '../../domain/types';
 import { RIR_MAX, RIR_MIN, parseReps, parseWeight, roundTo } from '../../domain/validation';
@@ -35,6 +36,12 @@ export function SetForm({
   const uid = useId();
   const [draft, setDraft] = useState<SetDraft>(initial);
   const [errors, setErrors] = useState<{ weight?: string; reps?: string }>({});
+  const submitRef = useRef<HTMLButtonElement>(null);
+
+  function onNumberFocus(e: React.FocusEvent<HTMLInputElement>) {
+    e.currentTarget.select();
+    revealAboveKeyboard(submitRef.current);
+  }
 
   function update(patch: Partial<SetDraft>) {
     const next = { ...draft, ...patch };
@@ -93,7 +100,7 @@ export function SetForm({
               value={draft.weight}
               aria-invalid={errors.weight ? true : undefined}
               aria-describedby={errors.weight ? `${weightId}-err` : undefined}
-              onFocus={(e) => e.currentTarget.select()}
+              onFocus={onNumberFocus}
               onChange={(e) => update({ weight: e.target.value })}
             />
             <button
@@ -136,7 +143,7 @@ export function SetForm({
               value={draft.reps}
               aria-invalid={errors.reps ? true : undefined}
               aria-describedby={errors.reps ? `${repsId}-err` : undefined}
-              onFocus={(e) => e.currentTarget.select()}
+              onFocus={onNumberFocus}
               onChange={(e) => update({ reps: e.target.value })}
             />
             <button
@@ -198,7 +205,7 @@ export function SetForm({
 
       <div className="set-form__actions">
         {secondaryActions}
-        <button type="submit" className="btn btn--primary btn--xl grow">
+        <button ref={submitRef} type="submit" className="btn btn--primary btn--xl grow">
           {submitLabel}
         </button>
       </div>

@@ -6,10 +6,13 @@ import {
   signUpWithEmail,
 } from '../auth/authActions';
 import { APP_NAME } from '../config/constants';
+import { useAuth } from '../auth/useAuth';
 
 export function SignInPage() {
+  const { redirectError } = useAuth();
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [localError, setError] = useState<string | null>(null);
+  const error = localError ?? redirectError;
   const [showEmail, setShowEmail] = useState(false);
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');

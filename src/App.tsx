@@ -5,6 +5,7 @@ import { useAuth } from './auth/useAuth';
 import { BottomNav } from './ui/BottomNav';
 import { WriteErrorToast } from './ui/WriteErrorToast';
 import { UpdatePrompt } from './pwa/UpdatePrompt';
+import { useTypingFlag } from './hooks/useKeyboard';
 import { FullScreenLoading } from './ui/Loading';
 import { SignInPage } from './routes/SignInPage';
 import { HomePage } from './routes/HomePage';
@@ -23,6 +24,7 @@ const ProgressPage = lazy(() => import('./routes/ProgressPage'));
 const ExerciseDetailPage = lazy(() => import('./routes/progress/ExerciseDetailPage'));
 
 function AppShell() {
+  useTypingFlag();
   return (
     <div className="shell">
       <Suspense fallback={<FullScreenLoading />}>

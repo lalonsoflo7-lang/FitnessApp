@@ -5,11 +5,16 @@ import { env } from './config/env';
 import { App } from './App';
 import { ConfigErrorPage } from './routes/ConfigErrorPage';
 import { initServiceWorker } from './pwa/serviceWorker';
+import { canonicalRedirectUrl } from './config/canonicalOrigin';
 
-const root = createRoot(document.getElementById('root')!);
+const redirectTo = env.ok ? canonicalRedirectUrl(window.location, env.firebase) : null;
 
-root.render(
-  <StrictMode>{env.ok ? <App /> : <ConfigErrorPage missing={env.missing} />}</StrictMode>,
-);
-
-initServiceWorker();
+if (redirectTo) {
+  window.location.replace(redirectTo);
+} else {
+  const root = createRoot(document.getElementById('root')!);
+  root.render(
+    <StrictMode>{env.ok ? <App /> : <ConfigErrorPage missing={env.missing} />}</StrictMode>,
+  );
+  initServiceWorker();
+}

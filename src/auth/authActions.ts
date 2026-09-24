@@ -1,5 +1,6 @@
 import {
   GoogleAuthProvider,
+  getRedirectResult,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithPopup,
@@ -9,14 +10,27 @@ import {
 import { FirebaseError } from 'firebase/app';
 import { getFirebase } from '../firebase/firebase';
 
+/** True when running as an installed PWA (Android/desktop `display-mode` or iOS `standalone`). */
+export function isStandalonePwa(): boolean {
+  const iosStandalone = (navigator as Navigator & { standalone?: boolean }).standalone === true;
+  return iosStandalone || window.matchMedia?.('(display-mode: standalone)').matches === true;
+}
+
 /**
- * Google Sign-In. Popup first (works in browsers and installed PWAs on Android/desktop);
- * falls back to redirect when the popup is blocked (common in iOS standalone mode).
+ * Google Sign-In.
+ * - Installed PWA (notably iOS standalone): redirect. Popups there open in a separate browser
+ *   sheet that cannot report back to the app. The redirect works in Safari because the app is
+ *   served from the same origin as `authDomain` (see config/canonicalOrigin.ts).
+ * - Browser tab: popup, falling back to redirect if the popup is blocked.
  */
 export async function signInWithGoogle(): Promise<void> {
   const { auth } = getFirebase();
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
+  if (isStandalonePwa()) {
+    await signInWithRedirect(auth, provider);
+    return;
+  }
   try {
     await signInWithPopup(auth, provider);
   } catch (error) {
@@ -30,6 +44,11 @@ export async function signInWithGoogle(): Promise<void> {
     }
     throw error;
   }
+}
+
+/** Completes a pending redirect sign-in. Resolves quietly when there was none. */
+export async function consumeRedirectResult(): Promise<void> {
+  await getRedirectResult(getFirebase().auth);
 }
 
 export async function signInWithEmail(email: string, password: string): Promise<void> {

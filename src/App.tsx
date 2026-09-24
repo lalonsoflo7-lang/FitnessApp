@@ -4,6 +4,7 @@ import { AuthProvider } from './auth/AuthProvider';
 import { useAuth } from './auth/useAuth';
 import { BottomNav } from './ui/BottomNav';
 import { WriteErrorToast } from './ui/WriteErrorToast';
+import { UpdatePrompt } from './pwa/UpdatePrompt';
 import { FullScreenLoading } from './ui/Loading';
 import { SignInPage } from './routes/SignInPage';
 import { HomePage } from './routes/HomePage';
@@ -29,6 +30,7 @@ function AppShell() {
       </Suspense>
       <BottomNav />
       <WriteErrorToast />
+      <UpdatePrompt />
     </div>
   );
 }

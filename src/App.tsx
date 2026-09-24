@@ -3,10 +3,13 @@ import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router';
 import { AuthProvider } from './auth/AuthProvider';
 import { useAuth } from './auth/useAuth';
 import { BottomNav } from './ui/BottomNav';
+import { WriteErrorToast } from './ui/WriteErrorToast';
 import { FullScreenLoading } from './ui/Loading';
 import { SignInPage } from './routes/SignInPage';
 import { HomePage } from './routes/HomePage';
 import { DataProvider } from './data/DataProvider';
+// The workout screen is eagerly loaded: it must open instantly, also offline.
+import ActiveWorkoutPage from './routes/workout/ActiveWorkoutPage';
 
 // Secondary screens are split so the first paint (Inicio / entrenamiento) stays light.
 // Progress screens pull in the charting library only when visited.
@@ -23,6 +26,7 @@ function AppShell() {
         <Outlet />
       </Suspense>
       <BottomNav />
+      <WriteErrorToast />
     </div>
   );
 }
@@ -43,6 +47,7 @@ function AuthGate() {
           <Route path="historial" element={<HistoryPage />} />
           <Route path="progreso" element={<ProgressPage />} />
         </Route>
+        <Route path="entrenamiento/:workoutId" element={<ActiveWorkoutPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </DataProvider>

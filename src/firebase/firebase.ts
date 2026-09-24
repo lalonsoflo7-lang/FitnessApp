@@ -31,6 +31,7 @@ export function getFirebase(): FirebaseServices {
   const auth = getAuth(app);
   const db = initializeFirestore(app, {
     localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+    ignoreUndefinedProperties: true,
   });
   if (env.useEmulators) {
     connectAuthEmulator(auth, `http://${env.emulatorHost}:9099`, { disableWarnings: true });

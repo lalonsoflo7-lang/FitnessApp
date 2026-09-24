@@ -6,6 +6,7 @@ import { PageHeader } from '../ui/PageHeader';
 import { RoutinesTabs } from '../ui/RoutinesTabs';
 import { InlineLoading } from '../ui/Loading';
 import { EditIcon, PlusIcon } from '../ui/icons';
+import { StartWorkoutButton } from '../ui/StartWorkoutButton';
 
 function RoutineCard({ routine }: { routine: Routine }) {
   const exercisesById = useExercisesById();
@@ -30,6 +31,7 @@ function RoutineCard({ routine }: { routine: Routine }) {
         </Link>
       </div>
       {names.length > 0 && <p className="small faint">{names.join(' · ')}</p>}
+      {!routine.archived && <StartWorkoutButton routine={routine} />}
     </li>
   );
 }

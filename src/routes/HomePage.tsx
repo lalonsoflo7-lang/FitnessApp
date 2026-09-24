@@ -9,6 +9,7 @@ import { SyncStatus } from '../ui/SyncStatus';
 import { StartWorkoutButton } from '../ui/StartWorkoutButton';
 import { InlineLoading } from '../ui/Loading';
 import { PlayIcon, StarIcon } from '../ui/icons';
+import { AccountSection } from '../ui/AccountSection';
 
 export function HomePage() {
   const { routines, workouts } = useData();
@@ -118,6 +119,8 @@ export function HomePage() {
           </ul>
         </section>
       )}
+
+      <AccountSection />
     </main>
   );
 }

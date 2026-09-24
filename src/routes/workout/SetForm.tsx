@@ -169,10 +169,10 @@ export function SetForm({
         ))}
       </div>
 
+      <p className="stepper__label" aria-hidden="true">
+        RIR <span style={{ textTransform: 'none', fontWeight: 500 }}>(opcional)</span>
+      </p>
       <div className="rir" role="group" aria-label="RIR (opcional)">
-        <span className="rir__label" aria-hidden="true">
-          RIR
-        </span>
         <button
           type="button"
           className="rir__opt"

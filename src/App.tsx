@@ -17,6 +17,7 @@ const RoutinesPage = lazy(() => import('./routes/RoutinesPage'));
 const RoutineEditorPage = lazy(() => import('./routes/RoutineEditorPage'));
 const ExercisesPage = lazy(() => import('./routes/ExercisesPage'));
 const HistoryPage = lazy(() => import('./routes/HistoryPage'));
+const WorkoutDetailPage = lazy(() => import('./routes/WorkoutDetailPage'));
 const ProgressPage = lazy(() => import('./routes/ProgressPage'));
 
 function AppShell() {
@@ -45,6 +46,7 @@ function AuthGate() {
           <Route path="rutinas/nueva" element={<RoutineEditorPage />} />
           <Route path="rutinas/:routineId" element={<RoutineEditorPage />} />
           <Route path="historial" element={<HistoryPage />} />
+          <Route path="historial/:workoutId" element={<WorkoutDetailPage />} />
           <Route path="progreso" element={<ProgressPage />} />
         </Route>
         <Route path="entrenamiento/:workoutId" element={<ActiveWorkoutPage />} />

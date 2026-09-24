@@ -910,3 +910,48 @@ button.list-item:disabled {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.history-table th {
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding: 4px 6px 6px 0;
+}
+
+.history-table td {
+  padding: 8px 6px 8px 0;
+  border-top: 1px solid var(--border);
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.stat-grid > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-grid__label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.stat-grid__value {
+  font-size: 1.3rem;
+  font-weight: 750;
+}

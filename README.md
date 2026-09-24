@@ -36,7 +36,7 @@ Modelo mental: **Rutina → Entrenamiento → Ejercicio → Series → Historial
 
 - Node.js ≥ 20.19 (probado con Node 22).
 - Java 21 o superior, solo para el Firebase Emulator Suite (tests de reglas y E2E).
-- Un proyecto de Firebase para producción.
+- Un proyecto de Firebase en plan Spark para producción (ya configurado: ver "Producción").
 
 ## Instalación y desarrollo local
 
@@ -90,14 +90,21 @@ protección real son las reglas de Firestore. Aun así, `.env` y `.env.local` es
    ```
 6. Publica reglas e índices: `npx firebase deploy --only firestore`.
 
-### Google Sign-In en la PWA instalada (iOS)
+### Google Sign-In en Safari y en la PWA instalada (iOS)
 
-La app intenta primero `signInWithPopup` y, si el navegador bloquea el popup, usa
-`signInWithRedirect`. En Safari/iOS el redirect puede fallar cuando `authDomain` es distinto del
-dominio de la app (particionado de almacenamiento). Si publicas en Firebase Hosting, **pon como
-`VITE_FIREBASE_AUTH_DOMAIN` el mismo dominio donde vive la app** (por ejemplo
-`<proyecto>.web.app` o tu dominio propio): Hosting sirve el manejador `/__/auth/` en ese dominio.
-Como alternativa robusta queda el acceso con correo y contraseña.
+Safari bloquea el almacenamiento de terceros, lo que rompe `signInWithRedirect` cuando la app vive
+en un dominio distinto de `authDomain`. La configuración de producción lo evita así:
+
+- `authDomain` es `<proyecto>.firebaseapp.com` y la app **se sirve en ese mismo dominio**, así que
+  el manejador `/__/auth/handler` de Hosting es del mismo origen que la app.
+- Si alguien abre `<proyecto>.web.app`, la app redirige al mismo path en `firebaseapp.com`
+  (`src/config/canonicalOrigin.ts`). Así hay un solo origen para el login, la PWA instalada y la
+  caché IndexedDB.
+- En la PWA instalada se usa `signInWithRedirect`, porque en iOS standalone un popup se abre en una
+  hoja aparte que no puede comunicarse con la app. En una pestaña del navegador se usa un popup, con
+  redirect como alternativa si el popup se bloquea. Los errores del redirect se muestran en la
+  pantalla de login.
+- El acceso con correo y contraseña funciona siempre como alternativa.
 
 ## Firestore
 
@@ -235,6 +242,22 @@ Además comprueba:
 
 Si ya tienes Chromium instalado, puedes indicar `CHROMIUM_PATH=/ruta/a/chrome` para que Playwright no lo descargue.
 
+## Producción
+
+| Elemento         | Valor                                                                                                  |
+| ---------------- | ------------------------------------------------------------------------------------------------------ |
+| Proyecto         | **FitnessApp Alonso** · ID `fitnessapp-alonso-app` (`fitnessapp-alonso` ya estaba ocupado globalmente) |
+| Plan             | Spark (sin cuenta de facturación), sin Google Analytics                                                |
+| URL canónica     | **https://fitnessapp-alonso-app.firebaseapp.com**                                                      |
+| URL alternativa  | https://fitnessapp-alonso-app.web.app (redirige a la canónica)                                         |
+| Firestore        | `(default)`, Native, edición Standard, `northamerica-south1` (Querétaro), sin PITR                     |
+| Authentication   | Correo/contraseña y Google (Firebase Auth, sin Identity Platform)                                      |
+| Productos usados | Solo Hosting clásico, Firestore y Auth. Sin Cloud Functions, Storage ni App Hosting                    |
+
+Índices: todas las consultas usan índices automáticos de un campo, así que
+`firestore.indexes.json` está vacío a propósito. Se verificó en producción sin errores de índice
+faltante.
+
 ## Build y despliegue (Firebase Hosting)
 
 ```bash
@@ -256,6 +279,40 @@ Las variables `VITE_FIREBASE_*` deben estar en `.env.local` (o en el entorno) **
 - **Actualizaciones**: la nueva versión se descarga en segundo plano y aparece el aviso "Hay una
   nueva versión · Actualizar". Nunca se recarga sola, para no interrumpir un entrenamiento.
 - Instalación: en Android/Chrome, "Instalar app"; en iOS/Safari, Compartir → "Agregar a inicio".
+
+## Prueba en iPhone
+
+Dispositivo: iPhone 16 o posterior, con Safari. URL: **https://fitnessapp-alonso-app.firebaseapp.com**
+
+1. Abre la URL de producción en Safari.
+2. Inicia sesión con Google.
+3. Cierra sesión (Inicio → al final de la página → "Cerrar sesión").
+4. Inicia sesión con correo/contraseña (crea la cuenta con "Crear cuenta" si no existe).
+5. Toca el botón **Compartir**.
+6. Selecciona **"Añadir a pantalla de inicio"**.
+7. Abre FitnessApp desde el icono.
+8. Confirma el modo standalone: no se ve la barra de direcciones de Safari.
+9. Crea o abre una rutina.
+10. Inicia el entrenamiento.
+11. Registra series en al menos dos ejercicios.
+12. Cierra completamente la PWA (desliza hacia arriba en el selector de apps).
+13. Vuelve a abrirla.
+14. Verifica que aparece "Continuar entrenamiento".
+15. Registra una serie.
+16. Activa el modo avión.
+17. Registra otra serie. Debe aparecer "Sin conexión · cambios guardados en el teléfono".
+18. Cierra y vuelve a abrir la PWA.
+19. Verifica que la información sigue presente.
+20. Desactiva el modo avión.
+21. Espera a que desaparezca el indicador de sincronización.
+22. Finaliza el entrenamiento.
+23. Abre Historial.
+24. Confirma que la sesión está completa.
+
+**Prueba de actualización de la PWA** (tras cualquier despliegue nuevo): abre la PWA instalada con
+conexión y espera unos segundos (o ciérrala y vuelve a abrirla). Debe aparecer "Hay una nueva
+versión de FitnessApp" con el botón **Actualizar**; al pulsarlo, la app se recarga con la nueva
+versión. Si hay un entrenamiento activo, este sigue ahí después de actualizar.
 
 ## Limitaciones conocidas
 

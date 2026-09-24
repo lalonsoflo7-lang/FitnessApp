@@ -6,10 +6,13 @@ import { BottomNav } from './ui/BottomNav';
 import { FullScreenLoading } from './ui/Loading';
 import { SignInPage } from './routes/SignInPage';
 import { HomePage } from './routes/HomePage';
+import { DataProvider } from './data/DataProvider';
 
 // Secondary screens are split so the first paint (Inicio / entrenamiento) stays light.
 // Progress screens pull in the charting library only when visited.
 const RoutinesPage = lazy(() => import('./routes/RoutinesPage'));
+const RoutineEditorPage = lazy(() => import('./routes/RoutineEditorPage'));
+const ExercisesPage = lazy(() => import('./routes/ExercisesPage'));
 const HistoryPage = lazy(() => import('./routes/HistoryPage'));
 const ProgressPage = lazy(() => import('./routes/ProgressPage'));
 
@@ -29,15 +32,20 @@ function AuthGate() {
   if (initializing) return <FullScreenLoading label="Abriendo FitnessApp…" />;
   if (!user) return <SignInPage />;
   return (
-    <Routes>
-      <Route element={<AppShell />}>
-        <Route index element={<HomePage />} />
-        <Route path="rutinas" element={<RoutinesPage />} />
-        <Route path="historial" element={<HistoryPage />} />
-        <Route path="progreso" element={<ProgressPage />} />
-      </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <DataProvider uid={user.uid}>
+      <Routes>
+        <Route element={<AppShell />}>
+          <Route index element={<HomePage />} />
+          <Route path="rutinas" element={<RoutinesPage />} />
+          <Route path="rutinas/ejercicios" element={<ExercisesPage />} />
+          <Route path="rutinas/nueva" element={<RoutineEditorPage />} />
+          <Route path="rutinas/:routineId" element={<RoutineEditorPage />} />
+          <Route path="historial" element={<HistoryPage />} />
+          <Route path="progreso" element={<ProgressPage />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </DataProvider>
   );
 }
 

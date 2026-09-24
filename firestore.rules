@@ -1,0 +1,151 @@
+rules_version = '2';
+
+// FitnessApp security rules.
+// - Every document lives under /users/{uid}/… and only that authenticated user can touch it.
+// - Documents are shape-validated so a buggy or malicious client cannot store invalid data.
+// - Completed workouts and their sets are immutable: history represents what really happened.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    function data() {
+      return request.resource.data;
+    }
+
+    function validName(value) {
+      return value is string && value.size() > 0 && value.size() <= 80;
+    }
+
+    function validNotes(value) {
+      return value == null || (value is string && value.size() <= 500);
+    }
+
+    match /users/{uid} {
+      // No profile document is needed in V1.
+      allow read, write: if false;
+
+      function workoutPath(workoutId) {
+        return /databases/$(database)/documents/users/$(uid)/workouts/$(workoutId);
+      }
+
+      function workoutIsActive(workoutId) {
+        return exists(workoutPath(workoutId))
+          && get(workoutPath(workoutId)).data.status == 'active';
+      }
+
+      // ---------- Exercises ----------
+      function validExercise() {
+        return data().keys().hasOnly(['name', 'nameKey', 'notes', 'archived', 'createdAt', 'updatedAt'])
+          && data().keys().hasAll(['name', 'nameKey', 'archived', 'createdAt', 'updatedAt'])
+          && validName(data().name)
+          && data().nameKey is string && data().nameKey.size() <= 80
+          && validNotes(data().get('notes', null))
+          && data().archived is bool
+          && data().createdAt is timestamp
+          && data().updatedAt is timestamp;
+      }
+
+      match /exercises/{exerciseId} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid) && validExercise();
+        allow update: if isOwner(uid) && validExercise()
+          && data().createdAt == resource.data.createdAt;
+        // Exercises are archived, never deleted: history and progress reference their id.
+        allow delete: if false;
+      }
+
+      // ---------- Routines ----------
+      function validRoutine() {
+        return data().keys().hasOnly(['name', 'exerciseIds', 'archived', 'createdAt', 'updatedAt'])
+          && data().keys().hasAll(['name', 'exerciseIds', 'archived', 'createdAt', 'updatedAt'])
+          && validName(data().name)
+          && data().exerciseIds is list && data().exerciseIds.size() <= 50
+          && data().archived is bool
+          && data().createdAt is timestamp
+          && data().updatedAt is timestamp;
+      }
+
+      match /routines/{routineId} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid) && validRoutine();
+        allow update: if isOwner(uid) && validRoutine()
+          && data().createdAt == resource.data.createdAt;
+        // Safe: workouts keep their own snapshot of the routine.
+        allow delete: if isOwner(uid);
+      }
+
+      // ---------- Workouts ----------
+      function validWorkout() {
+        return data().keys().hasOnly([
+            'sourceRoutineId', 'routineNameSnapshot', 'startedAt', 'finishedAt', 'status',
+            'exercises', 'summary', 'createdAt', 'updatedAt'])
+          && data().keys().hasAll([
+            'sourceRoutineId', 'routineNameSnapshot', 'startedAt', 'finishedAt', 'status',
+            'exercises', 'createdAt', 'updatedAt'])
+          && (data().sourceRoutineId == null || data().sourceRoutineId is string)
+          && validName(data().routineNameSnapshot)
+          && data().startedAt is timestamp
+          && data().exercises is list && data().exercises.size() > 0
+          && data().exercises.size() <= 50
+          && data().createdAt is timestamp
+          && data().updatedAt is timestamp
+          && (
+            (data().status == 'active' && data().finishedAt == null)
+            || (data().status == 'completed' && data().finishedAt is timestamp
+                && data().summary is map)
+          );
+      }
+
+      match /workouts/{workoutId} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid) && validWorkout() && data().status == 'active';
+        // Only an active workout can change; its snapshot and start time are frozen.
+        allow update: if isOwner(uid) && validWorkout()
+          && resource.data.status == 'active'
+          && data().exercises == resource.data.exercises
+          && data().startedAt == resource.data.startedAt
+          && data().sourceRoutineId == resource.data.sourceRoutineId
+          && data().routineNameSnapshot == resource.data.routineNameSnapshot
+          && data().createdAt == resource.data.createdAt;
+        // Discarding is only possible while active. Completed workouts are permanent.
+        allow delete: if isOwner(uid) && resource.data.status == 'active';
+      }
+
+      // ---------- Sets ----------
+      function validSet() {
+        return data().keys().hasOnly([
+            'workoutId', 'exerciseId', 'exerciseNameSnapshot', 'exerciseOrder', 'setNumber',
+            'weight', 'reps', 'setType', 'rir', 'workoutStartedAt', 'createdAt', 'updatedAt'])
+          && data().keys().hasAll([
+            'workoutId', 'exerciseId', 'exerciseNameSnapshot', 'exerciseOrder', 'setNumber',
+            'weight', 'reps', 'setType', 'rir', 'workoutStartedAt', 'createdAt', 'updatedAt'])
+          && data().workoutId is string
+          && data().exerciseId is string
+          && validName(data().exerciseNameSnapshot)
+          && data().exerciseOrder is int && data().exerciseOrder >= 0
+          && data().setNumber is int && data().setNumber >= 1
+          && data().weight is number && data().weight >= 0 && data().weight <= 1000
+          && data().reps is int && data().reps >= 0 && data().reps <= 999
+          && data().setType in ['warmup', 'working', 'dropset']
+          && (data().rir == null || (data().rir is int && data().rir >= 0 && data().rir <= 5))
+          && data().workoutStartedAt is timestamp
+          && data().createdAt is timestamp
+          && data().updatedAt is timestamp;
+      }
+
+      match /sets/{setId} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid) && validSet() && workoutIsActive(data().workoutId);
+        allow update: if isOwner(uid) && validSet()
+          && data().workoutId == resource.data.workoutId
+          && data().exerciseId == resource.data.exerciseId
+          && data().createdAt == resource.data.createdAt
+          && workoutIsActive(resource.data.workoutId);
+        allow delete: if isOwner(uid) && workoutIsActive(resource.data.workoutId);
+      }
+    }
+  }
+}

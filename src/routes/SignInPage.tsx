@@ -62,7 +62,7 @@ export function SignInPage() {
           Usar correo y contraseña
         </button>
       ) : (
-        <form className="card stack" onSubmit={onSubmit} aria-label="Acceso con correo">
+        <form className="card stack" onSubmit={onSubmit} aria-label="Acceso con email">
           <div className="segmented" role="group" aria-label="Modo">
             <button
               type="button"
@@ -105,7 +105,7 @@ export function SignInPage() {
             />
           </div>
           <button type="submit" className="btn btn--primary btn--block" disabled={busy}>
-            {mode === 'signin' ? 'Entrar' : 'Crear cuenta'}
+            {mode === 'signin' ? 'Entrar' : 'Registrarme'}
           </button>
         </form>
       )}

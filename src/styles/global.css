@@ -596,3 +596,32 @@ textarea {
     animation-duration: 2.4s;
   }
 }
+
+.segmented__link {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  border-radius: var(--radius-s);
+  color: var(--text-muted);
+  font-weight: 650;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.segmented__link[aria-current='page'] {
+  background: var(--surface-3);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+button.list-item {
+  width: 100%;
+  font: inherit;
+  color: inherit;
+}
+
+button.list-item:disabled {
+  opacity: 0.6;
+}
